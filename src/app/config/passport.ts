@@ -33,30 +33,21 @@ passport.use(
             }
             return done(null, user)
         } catch (error) {
-            console.log("google strategy error", error);
             return done(error)
         }
     })
 )
 
-// req
-// frontend localhost: 5173 --> localhost:5000/api/v1/auth/google
-// then passport --> google oauth consent(google login popup) --> gmail login --> successful
-// then redirect to callback localhost:5000/api/v1/auth/google/callback
-// successfully login then Jwt token: role, email ... save data to db store --> give token
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
+passport.serializeUser((user: any, done) => {
     done(null, user._id)
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-passport.deserializeUser(async (id: string, done: any) => {
+passport.deserializeUser(async (id: string, done) => {
     try {
         const user = await User.findById(id)
         done(null, user)
     } catch (error) {
-        console.log(error);
         done(error)
     }
 })

@@ -22,7 +22,7 @@ const updatedUser = catchAsync(async (req: Request, res: Response, next: NextFun
     const userId = req.params.id
     const verifiedToken = req.user;
     const payload = req.body;
-    const user = await UserService.updatedUser(userId, payload, verifiedToken)
+    const user = await UserService.updatedUser(userId, payload, verifiedToken as JwtPayload)
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

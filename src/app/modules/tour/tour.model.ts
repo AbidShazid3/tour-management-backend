@@ -5,6 +5,8 @@ const tourTypeSchema = new Schema<ITourTypes>({
     name: {type: String, unique: true ,required: true}
 }, { timestamps: true, versionKey:false})
 
+export const TourType = model<ITourTypes>("TourType", tourTypeSchema);
+
 const tourSchema = new Schema<ITour>({
     title: { type: String, required: true },
     slug: { type: String, unique: true, required: true },
@@ -25,4 +27,3 @@ const tourSchema = new Schema<ITour>({
 }, { timestamps: true, versionKey: false })
 
 export const Tour = model<ITour>("Tour", tourSchema);
-export const TourType = model<ITourTypes>("TourType", tourTypeSchema);

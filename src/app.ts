@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import passport from "passport";
 import expressSession from 'express-session';
 import './app/config/passport';
+import { envVars } from "./app/config/evn";
 
 const app: Application = express();
 
@@ -15,7 +16,7 @@ app.use(cors());
 app.use(cookieParser());
 
 app.use(expressSession({
-    secret: 'Your secret',
+    secret: envVars.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
 }))

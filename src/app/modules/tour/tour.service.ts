@@ -9,13 +9,14 @@ const createTour = async (payload: ITour) => {
         throw new AppError(httpStatus.BAD_REQUEST, 'Tour with this title already exist')
     }
 
-    const baseSlug = payload.title.toLowerCase().split(' ').join('-') + '-division';
-    let slug = baseSlug;
-    let counter = 1;
-    while (await Tour.exists({ slug })) {
-        slug = `${slug}-${counter++}`
-    }
-    payload.slug = slug;
+    // const baseSlug = payload.title.toLowerCase().split(' ').join('-');
+    // let slug = baseSlug;
+    // let counter = 1;
+    // while (await Tour.exists({ slug })) {
+    //     slug = `${slug}-${counter++}`
+    // }
+    // payload.slug = slug;
+
 
     const tour = await Tour.create(payload);
     return tour

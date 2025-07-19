@@ -51,6 +51,7 @@ const deleteTour = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 });
 
+// tour-types
 const createTourType = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const tourType = await TourService.createTourType(req.body);
     sendResponse(res, {

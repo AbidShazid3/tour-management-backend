@@ -9,13 +9,13 @@ const createDivision = async (payload: IDivision) => {
         throw new AppError(httpStatus.BAD_REQUEST, 'A Division name already exist')
     }
 
-    const baseSlug = payload.name.toLowerCase().split(' ').join('-') + '-division';
-    let slug = baseSlug;
-    let counter = 1;
-    while (await Division.exists({ slug })) {
-        slug = `${slug}-${counter++}`
-    }
-    payload.slug = slug;
+    // const baseSlug = payload.name.toLowerCase().split(' ').join('-') + '-division';
+    // let slug = baseSlug;
+    // let counter = 1;
+    // while (await Division.exists({ slug })) {
+    //     slug = `${slug}-${counter++}`
+    // }
+    // payload.slug = slug;
 
     const division = await Division.create(payload)
     return division;
@@ -32,7 +32,10 @@ const getAllDivision = async () => {
     };
 }
 const getSingleDivision = async (slug: string) => {
-    const division = await Division.findOne({slug})
+    const division = await Division.findOne({ slug })
+    if (!division) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Division with slug not found')
+    }
     return {
         data: division
     };

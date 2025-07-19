@@ -8,4 +8,38 @@ const divisionSchema = new Schema<IDivision>({
     description: { type: String },
 }, { timestamps: true, versionKey: false })
 
+
+divisionSchema.pre('save', async function (next) {
+    if (this.isModified('name')) {
+        const baseSlug = this.name.toLowerCase().split(' ').join('-') + '-division';
+        let slug = baseSlug;
+        let counter = 1;
+        while (await Division.exists({ slug })) {
+            slug = `${slug}-${counter++}`
+        }
+        this.slug = slug;
+    }
+
+    next()
+})
+
+// p-hero code
+// divisionSchema.pre('findOneAndUpdate', async function (next) {
+//     const division = this.getUpdate() as Partial<IDivision>
+
+//     if (division.name) {
+//         const baseSlug = division.name.toLowerCase().split(' ').join('-') + '-division';
+//         let slug = baseSlug;
+//         let counter = 1;
+//         while (await Division.exists({ slug })) {
+//             slug = `${slug}-${counter++}`
+//         }
+//         division.slug = slug;
+//     }
+//     this.setUpdate(division);
+
+//     next();
+// })
+
+
 export const Division = model<IDivision>("Division", divisionSchema)

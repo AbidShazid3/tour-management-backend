@@ -2,6 +2,8 @@ import AppError from "../../errorHelpers/AppError";
 import { ITour, ITourTypes } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 import httpStatus from 'http-status-codes';
+import { tourSearchableFields } from "./tour.constant";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createTour = async (payload: ITour) => {
     const isExistTour = await Tour.findOne({ title: payload.title })
@@ -22,14 +24,58 @@ const createTour = async (payload: ITour) => {
     return tour
 }
 
-const getAllTour = async () => {
-    const tour = await Tour.find({})
-    const totalTour = await Tour.countDocuments();
+// const getAllTour = async (query: Record<string, string>) => {
+//     const { searchTerm, page = 1, limit = 10, sort = 'createdAt', fields, ...filters } = query;
+
+//     const numericPage = Number(page);
+//     const numericLimit = Number(limit);
+//     const skip = (numericPage - 1) * numericLimit
+
+//     const searchCondition = searchTerm ? {
+//         $or: tourSearchableFields.map(field => ({
+//             [field]: { $regex: searchTerm, $options: 'i' }
+//         }))
+//     } : {}
+
+//     const hasSearch = Object.keys(searchCondition).length > 0;
+//     const hasFilter = Object.keys(filters).length > 0;
+
+//     const finalQuery = hasSearch && hasFilter ? { $and: [searchCondition, filters] } : hasSearch ? searchCondition : hasFilter ? filters : {};
+
+//     const selectedFields = fields ? fields.split(',').join(' ') : ''
+
+//     const tour = await Tour.find(finalQuery).sort(sort).select(selectedFields).skip(skip).limit(numericLimit)
+
+//     const totalTour = await Tour.countDocuments(finalQuery);
+//     const metaData = {
+//             page: numericPage,
+//             limit: numericLimit,
+//             total: totalTour,
+//             totalPage: Math.ceil(totalTour / numericLimit)
+//         }
+
+//     return {
+//         data: tour,
+//         meta: metaData
+//     };
+// }
+
+const getAllTour = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Tour.find(), query);
+
+    const tours = queryBuilder
+        .search(tourSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .pagination()
+
+    const allTours = await tours.build();
+    const meta = await queryBuilder.getMeta();
+
     return {
-        data: tour,
-        meta: {
-            total: totalTour
-        }
+        data: allTours,
+        meta
     };
 }
 
@@ -49,7 +95,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
         payload.slug = slug;
     }
 
-    const updatedTour = await Tour.findByIdAndUpdate(id, payload,{new: true, runValidators: true});
+    const updatedTour = await Tour.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
     return updatedTour
 }
 const deleteTour = async (id: string) => {

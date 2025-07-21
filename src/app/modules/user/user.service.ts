@@ -5,6 +5,8 @@ import httpStatus from 'http-status-codes';
 import bcryptjs from 'bcryptjs';
 import { envVars } from "../../config/evn";
 import { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
@@ -59,30 +61,45 @@ const updatedUser = async (userId: string, payload: Partial<IUser>, decodedToken
     if (payload.password) {
         const isSame = await bcryptjs.compare(payload.password, userIdExist.password || '')
         if (!isSame) {
-        payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
+            payload.password = await bcryptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
         } else {
             delete payload.password
         }
     }
 
     const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
-    
+
     return newUpdatedUser;
 }
 
-const getAllUsers = async () => {
-    const users = await User.find({})
-    const totalUsers = await User.countDocuments()
+const getAllUsers = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(User.find(), query);
+    const allUsers = queryBuilder
+        .filter()
+        .search(userSearchableFields)
+        .sort()
+        .fields()
+        .pagination();
+
+
+    const users = await allUsers.build();
+    const totalUsers = await queryBuilder.getMeta();
     return {
         data: users,
-        meta: {
-            total: totalUsers
-        }
+        meta: totalUsers
     };
 };
+
+const getSingleUser = async (id: string) => {
+    const user = await User.findById(id);
+    return {
+        data: user
+    }
+}
 
 export const UserService = {
     createUser,
     getAllUsers,
+    getSingleUser,
     updatedUser,
 };

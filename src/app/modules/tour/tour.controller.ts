@@ -71,7 +71,8 @@ const getAllTourTypes = catchAsync(async (req: Request, res: Response, next: Nex
         success: true,
         statusCode: httpStatus.OK,
         message: 'All Tour Types retrieved successfully',
-        data: result
+        data: result.data,
+        meta: result.meta
     })
 })
 

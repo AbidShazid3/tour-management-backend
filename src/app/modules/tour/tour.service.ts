@@ -2,7 +2,7 @@ import AppError from "../../errorHelpers/AppError";
 import { ITour, ITourTypes } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 import httpStatus from 'http-status-codes';
-import { tourSearchableFields } from "./tour.constant";
+import { tourSearchableFields, tourTypeSearchableFields } from "./tour.constant";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createTour = async (payload: ITour) => {
@@ -119,9 +119,23 @@ const createTourType = async (payload: ITourTypes) => {
     return tourType
 };
 
-const getAllTourTypes = async () => {
-    const tourTypes = await TourType.find({})
-    return tourTypes;
+const getAllTourTypes = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(TourType.find(), query);
+
+    const tourTypes = queryBuilder
+        .search(tourTypeSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .pagination()
+
+    const allTourTypes = await tourTypes.build();
+    const meta = await queryBuilder.getMeta();
+
+    return {
+        data: allTourTypes,
+        meta
+    };
 };
 
 const updateTourType = async (id: string, payload: Partial<ITourTypes>) => {

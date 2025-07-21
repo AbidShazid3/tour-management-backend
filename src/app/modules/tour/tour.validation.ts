@@ -21,8 +21,8 @@ export const createTourZodSchema = z.object({
     tourPlan: z.array(z.string()).optional(),
     maxGuest: z.number({ invalid_type_error: 'Max Guest From must be number' }).optional(),
     minAge: z.number({ invalid_type_error: 'Minium age must be number' }).optional(),
-    division: z.string().optional(),
-    tourType: z.string().optional(),
+    division: z.string(),
+    tourType: z.string(),
     departureLocation: z.string().optional(),
     arrivalLocation: z.string().optional()
 })

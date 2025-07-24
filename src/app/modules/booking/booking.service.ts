@@ -72,7 +72,6 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             transactionId: transactionId
         }
         const sslPayment = await SSLService.sslPaymentInit(sslPayload)
-        console.log(sslPayment);
 
         await session.commitTransaction();
 

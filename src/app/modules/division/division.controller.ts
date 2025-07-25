@@ -4,9 +4,14 @@ import { catchAsync } from "../../utils/catchAsync";
 import { DivisionServices } from "./division.service";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from 'http-status-codes';
+import { IDivision } from "./division.interface";
 
 const createDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const division = await DivisionServices.createDivision(req.body)
+    const payload: IDivision = {
+        thumbnail: req.file?.path,
+        ...req.body
+    }
+    const division = await DivisionServices.createDivision(payload)
 
     sendResponse(res, {
         success: true,

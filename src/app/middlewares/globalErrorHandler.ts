@@ -8,12 +8,22 @@ import { handlerCastError } from "../helpers/handleCastError";
 import { handlerZodError } from "../helpers/handlerZodError";
 import { handlerValidationError } from "../helpers/handlerValidationError";
 import { TErrorSources } from "../interfaces/error.types";
+import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 
-export const globalErrorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler = async(error: any, req: Request, res: Response, next: NextFunction) => {
     if (envVars.NODE_ENV === 'development') {
         // eslint-disable-next-line no-console
         console.log(error);
     }
+
+    if (req.file) {
+        await deleteImageFromCloudinary(req.file.path)
+    }
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const imageUrl = (req.files as Express.Multer.File[]).map(file => file.path)
+        await Promise.all(imageUrl.map(url => deleteImageFromCloudinary(url)))
+    }
+
     let errorSources: TErrorSources[] = []
     let statusCode = 500;
     let message = 'Something went wrong'

@@ -4,9 +4,14 @@ import { catchAsync } from "../../utils/catchAsync"
 import { TourService } from "./tour.service"
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from 'http-status-codes';
+import { ITour } from "./tour.interface";
 
 const createTour = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const tour = await TourService.createTour(req.body);
+    const payload: ITour = {
+        images: (req.files as Express.Multer.File[]).map(file => file.path),
+        ...req.body
+    }
+    const tour = await TourService.createTour(payload);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

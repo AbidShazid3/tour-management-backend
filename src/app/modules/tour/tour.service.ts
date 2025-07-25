@@ -91,7 +91,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     }
 
     if (payload.title && payload.title !== isExistTour.title) {
-        const baseSlug = payload.title.toLowerCase().split(' ').join('-') + '-division';
+        const baseSlug = payload.title.toLowerCase().split(' ').join('-');
         let slug = baseSlug;
         let counter = 1;
         while (await Tour.exists({ slug })) {

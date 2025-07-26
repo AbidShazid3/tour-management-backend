@@ -6,6 +6,7 @@ import bcryptjs from 'bcryptjs';
 import { createNewAccessTokenWithRefreshToken } from "../../utils/userTokens";
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/evn";
+import { IAuthProvider, IProvider } from "../user/user.interface";
 
 // const credentialsLogin = async (payload: Partial<IUser>) => {
 //     const { email, password } = payload;
@@ -41,7 +42,12 @@ const getNewAccessToken = async (refreshToken: string) => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const resetPassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+    return {}
+};
+
+const changePassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
     const user = await User.findById(decodedToken.userId)
     const isOldPasswordMatch = await bcryptjs.compare(oldPassword, user!.password as string)
     if (!isOldPasswordMatch) {
@@ -52,8 +58,29 @@ const resetPassword = async (oldPassword: string, newPassword: string, decodedTo
     user!.save();
 };
 
+const setPassword = async (userId: string, plainPassword: string) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, 'user not found')
+    }
+    if (user.password && user.auths.some(providerObject => providerObject.provider === IProvider.GOOGLE)) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'You have already set your password.Now you can change your password from your profile password update')
+    }
+
+    const hashPassword = await bcryptjs.hash(plainPassword, Number(envVars.BCRYPT_SALT_ROUND))
+
+    const auths: IAuthProvider[] = [...user.auths, { provider: IProvider.CREDENTIALS, providerId: user.email }]
+    
+    user.password = hashPassword;
+    user.auths = auths;
+
+    await user.save();
+}
+
 export const AuthServices = {
     // credentialsLogin,
     getNewAccessToken,
     resetPassword,
+    changePassword,
+    setPassword,
 }

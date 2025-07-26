@@ -1,3 +1,4 @@
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 import AppError from "../../errorHelpers/AppError";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { divisionSearchableFields } from "./division.constant";
@@ -21,7 +22,7 @@ const createDivision = async (payload: IDivision) => {
 
     const division = await Division.create(payload)
     return division;
-}
+};
 
 const getAllDivision = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilder(Division.find(), query)
@@ -38,7 +39,8 @@ const getAllDivision = async (query: Record<string, string>) => {
         data: division,
         meta
     };
-}
+};
+
 const getSingleDivision = async (slug: string) => {
     const division = await Division.findOne({ slug })
     if (!division) {
@@ -47,7 +49,7 @@ const getSingleDivision = async (slug: string) => {
     return {
         data: division
     };
-}
+};
 
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     const isExistDivision = await Division.findById(id)
@@ -73,9 +75,15 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
         payload.slug = slug;
     }
 
-    const updatedDivision = await Division.findByIdAndUpdate(id, payload, { new: true, runValidators: true })
+    const updatedDivision = await Division.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+
+    if (payload.thumbnail && isExistDivision.thumbnail) {
+        await deleteImageFromCloudinary(isExistDivision.thumbnail)
+    }
+
     return updatedDivision;
-}
+};
+
 const deleteDivision = async (id: string) => {
     const isExistDivision = await Division.findById(id)
     if (!isExistDivision) {
@@ -84,7 +92,7 @@ const deleteDivision = async (id: string) => {
 
     await Division.findByIdAndDelete(id)
     return null;
-}
+};
 
 export const DivisionServices = {
     createDivision,

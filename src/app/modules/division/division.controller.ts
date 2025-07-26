@@ -19,7 +19,8 @@ const createDivision = catchAsync(async (req: Request, res: Response, next: Next
         message: 'Division created successfully',
         data: division,
     })
-})
+});
+
 const getAllDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query;
     const result = await DivisionServices.getAllDivision(query as Record<string, string>)
@@ -31,7 +32,8 @@ const getAllDivision = catchAsync(async (req: Request, res: Response, next: Next
         data: result.data,
         meta: result.meta
     })
-})
+});
+
 const getSingleDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const slug = req.params.slug;
     const result = await DivisionServices.getSingleDivision(slug)
@@ -42,10 +44,15 @@ const getSingleDivision = catchAsync(async (req: Request, res: Response, next: N
         message: 'Single Division retrieved successfully',
         data: result.data
     })
-})
+});
+
 const updateDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id
-    const result = await DivisionServices.updateDivision(id, req.body)
+    const id = req.params.id;
+    const payload: IDivision = {
+        ...req.body,
+        ...(req.file?.path && { thumbnail: req.file.path })
+    }
+    const result = await DivisionServices.updateDivision(id, payload)
 
     sendResponse(res, {
         success: true,
@@ -53,7 +60,8 @@ const updateDivision = catchAsync(async (req: Request, res: Response, next: Next
         message: 'Division updated successfully',
         data: result
     })
-})
+});
+
 const deleteDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     const result = await DivisionServices.deleteDivision(id)
@@ -64,7 +72,7 @@ const deleteDivision = catchAsync(async (req: Request, res: Response, next: Next
         message: 'Division deleted successfully',
         data: result
     })
-})
+});
 
 export const DivisionController = {
     createDivision,

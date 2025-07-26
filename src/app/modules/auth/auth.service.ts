@@ -77,10 +77,16 @@ const setPassword = async (userId: string, plainPassword: string) => {
     await user.save();
 }
 
+const forgetPassword = async () => {
+
+    return{}
+}
+
 export const AuthServices = {
     // credentialsLogin,
     getNewAccessToken,
     resetPassword,
     changePassword,
     setPassword,
+    forgetPassword,
 }

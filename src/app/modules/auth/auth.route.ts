@@ -12,13 +12,12 @@ router.post('/login', AuthController.credentialsLogin);
 router.post('/logout', AuthController.logout);
 router.post('/refresh-token', AuthController.getNewAccessToken);
 
-router.post('/reset-password', checkAuth(...Object.values(Role)), AuthController.resetPassword);
-
 router.post('/change-password', checkAuth(...Object.values(Role)), AuthController.changePassword);
 
 router.post('/set-password', checkAuth(...Object.values(Role)), AuthController.setPassword);
 
 router.post('/forget-password', AuthController.forgetPassword);
+router.post('/reset-password', checkAuth(...Object.values(Role)), AuthController.resetPassword);
 
 router.get('/google', async (req: Request, res: Response, next: NextFunction) => {
     const redirect = req.query.redirect || '/'

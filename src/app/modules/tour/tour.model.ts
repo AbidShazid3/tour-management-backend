@@ -30,7 +30,7 @@ const tourSchema = new Schema<ITour>({
 
 tourSchema.pre('save', async function (next) {
     if (this.isModified('title')) {
-        const baseSlug = this.title.toLowerCase().split(' ').join('-') + '-division';
+        const baseSlug = this.title.toLowerCase().split(' ').join('-');
         let slug = baseSlug;
         let counter = 1;
         while (await Tour.exists({ slug })) {

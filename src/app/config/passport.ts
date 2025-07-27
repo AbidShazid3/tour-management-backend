@@ -3,7 +3,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./evn";
 import { User } from "../modules/user/user.model";
-import { IProvider, Role } from "../modules/user/user.interface";
+import { IProvider, isActive, Role } from "../modules/user/user.interface";
 import { Strategy as localStrategy } from "passport-local";
 import bcryptjs from 'bcryptjs';
 
@@ -15,6 +15,15 @@ passport.use(new localStrategy({
         const isUserExist = await User.findOne({ email })
         if (!isUserExist) {
             return done(null, false, { message: 'User does not exist' })
+        }
+        if (!isUserExist.isVerified) {
+            return done(null, false, { message: 'User is not verified' });
+        }
+        if (isUserExist.isActive === isActive.BLOCKED || isUserExist.isActive === isActive.INACTIVE) {
+            return done(null, false, { message: `User is ${isUserExist.isActive}` });
+        }
+        if (isUserExist.isDeleted) {
+            return done(null, false, { message: 'User is deleted' });
         }
 
         const isGoogleAuthenticated = isUserExist.auths.some(providerObjects => providerObjects.provider === IProvider.GOOGLE)
@@ -46,6 +55,16 @@ passport.use(
             }
 
             let user = await User.findOne({ email });
+            if (user && !user.isVerified) {
+                return done(null, false, { message: 'User is not verified' });
+            }
+            if (user && (user.isActive === isActive.BLOCKED || user.isActive === isActive.INACTIVE)) {
+                return done(null, false, { message: `User is ${user.isActive}` });
+            }
+            if (user && user.isDeleted) {
+                return done(null, false, { message: 'User is deleted' });
+            }
+
             if (!user) {
                 user = await User.create({
                     email,

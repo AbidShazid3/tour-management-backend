@@ -4,6 +4,7 @@ import { Tour, TourType } from "./tour.model";
 import httpStatus from 'http-status-codes';
 import { tourSearchableFields, tourTypeSearchableFields } from "./tour.constant";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 const createTour = async (payload: ITour) => {
     const isExistTour = await Tour.findOne({ title: payload.title })
@@ -22,7 +23,7 @@ const createTour = async (payload: ITour) => {
 
     const tour = await Tour.create(payload);
     return tour
-}
+};
 
 // const getAllTour = async (query: Record<string, string>) => {
 //     const { searchTerm, page = 1, limit = 10, sort = 'createdAt', fields, ...filters } = query;
@@ -77,12 +78,12 @@ const getAllTour = async (query: Record<string, string>) => {
         data: allTours,
         meta
     };
-}
+};
 
 const getSingleTour = async (slug: string) => {
     const tour = await Tour.findOne({ slug });
     return tour;
-}
+};
 
 const updateTour = async (id: string, payload: Partial<ITour>) => {
     const isExistTour = await Tour.findById(id)
@@ -91,7 +92,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     }
 
     if (payload.title && payload.title !== isExistTour.title) {
-        const baseSlug = payload.title.toLowerCase().split(' ').join('-') + '-division';
+        const baseSlug = payload.title.toLowerCase().split(' ').join('-');
         let slug = baseSlug;
         let counter = 1;
         while (await Tour.exists({ slug })) {
@@ -100,9 +101,31 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
         payload.slug = slug;
     }
 
+    // add image
+    if (payload.images && payload.images.length > 0 && isExistTour.images && isExistTour.images.length > 0) {
+        payload.images = [...payload.images, ...isExistTour.images]
+    }
+
+    // delete image
+    if (payload.deleteImages && payload.deleteImages.length > 0 && isExistTour.images && isExistTour.images.length > 0) {
+        const restDBImages = isExistTour.images.filter(imageUrl => !payload.deleteImages?.includes(imageUrl));
+
+        const updatedPayloadImages = (payload.images || [])
+            .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+            .filter(imageUrl => !restDBImages?.includes(imageUrl))
+
+        payload.images = [...restDBImages, ...updatedPayloadImages];
+    }
+
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, { new: true, runValidators: true });
+
+    if (payload.deleteImages && payload.deleteImages.length > 0 && isExistTour.images && isExistTour.images.length > 0) {
+        await Promise.all(payload.deleteImages.map(url => deleteImageFromCloudinary(url)))
+    }
+
     return updatedTour
-}
+};
+
 const deleteTour = async (id: string) => {
     const isExistTour = await Tour.findById(id)
     if (!isExistTour) {
@@ -111,7 +134,7 @@ const deleteTour = async (id: string) => {
 
     await Tour.findByIdAndDelete(id);
     return null
-}
+};
 
 // tour-type
 const createTourType = async (payload: ITourTypes) => {
@@ -146,7 +169,7 @@ const getAllTourTypes= async (query: Record<string, string>) => {
 const getSingleTourType = async (id: string) => {
     const tourType = await TourType.findById(id);
     return tourType;
-}
+};
 
 const updateTourType = async (id: string, payload: Partial<ITourTypes>) => {
     const isExistTour = await TourType.findById(id)
@@ -166,7 +189,7 @@ const deleteTourType = async (id: string) => {
 
     await TourType.findByIdAndDelete(id);
     return null
-}
+};
 
 
 export const TourService = {
